@@ -12,7 +12,7 @@
         <label>Category
           <select name="category_id">
             <option value="">—</option>
-            <% categories.forEach(c => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+            <% categories.filter(c => c.active).forEach(c => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
           </select>
         </label>
         <label>Unit <input type="text" name="unit" value="pc" /></label>
@@ -31,9 +31,25 @@
         <button type="submit" class="btn btn-secondary">Add</button>
       </form>
       <h2 style="margin-top: 1.5rem;">Existing Categories</h2>
-      <ul class="plain-list">
-        <% categories.forEach(c => { %><li><%= c.name %></li><% }) %>
-      </ul>
+      <table class="table">
+        <tbody>
+          <% categories.forEach(c => { %>
+            <tr class="<%= !c.active ? 'row-muted' : '' %>">
+              <td>
+                <form id="category-form-<%= c.id %>" method="POST" action="/admin/categories/<%= c.id %>" class="form-inline">
+                  <input type="text" name="name" value="<%= c.name %>" required />
+                  <button type="submit" class="btn btn-small">Save</button>
+                </form>
+              </td>
+              <td>
+                <form method="POST" action="/admin/categories/<%= c.id %>/toggle-active" class="inline-form">
+                  <button type="submit" class="btn btn-small"><%= c.active ? 'Deactivate' : 'Activate' %></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -43,7 +59,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Name</th><th>Category</th><th>Unit</th><th>Cost</th><th>Price</th><th>Stock</th><th>Reorder</th><th>Active</th><th></th>
+            <th>Name</th><th>Barcode</th><th>Category</th><th>Unit</th><th>Cost</th><th>Price</th><th>Stock</th><th>Reorder</th><th>Active</th><th></th>
           </tr>
         </thead>
         <tbody>
@@ -51,11 +67,12 @@
             <% const fid = 'product-form-' + p.id %>
             <tr class="<%= !p.active ? 'row-muted' : (p.stock_quantity <= p.reorder_level ? 'row-warning' : '') %>">
                 <td><input form="<%= fid %>" type="text" name="name" value="<%= p.name %>" required /></td>
+                <td><input form="<%= fid %>" type="text" name="barcode" value="<%= p.barcode || '' %>" /></td>
                 <td>
                   <select form="<%= fid %>" name="category_id">
                     <option value="">—</option>
                     <% categories.forEach(c => { %>
-                      <option value="<%= c.id %>" <%= c.id === p.category_id ? 'selected' : '' %>><%= c.name %></option>
+                      <option value="<%= c.id %>" <%= c.id === p.category_id ? 'selected' : '' %>><%= c.name %><%= !c.active ? ' (inactive)' : '' %></option>
                     <% }) %>
                   </select>
                 </td>
