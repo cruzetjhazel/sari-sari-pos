@@ -12,10 +12,13 @@ router.get('/products', ctrl.listProducts);
 router.post('/products', ctrl.createProduct);
 router.post('/products/:id', ctrl.updateProduct);
 router.post('/categories', ctrl.createCategory);
+router.post('/categories/:id', ctrl.updateCategory);
+router.post('/categories/:id/toggle-active', ctrl.toggleCategoryActive);
 
 router.get('/users', ctrl.listUsers);
 router.post('/users', ctrl.createUser);
 router.post('/users/:id/toggle-active', ctrl.toggleUserActive);
+router.post('/users/:id/role', ctrl.updateUserRole);
 
 router.get('/sales', ctrl.listSales);
 router.get('/sales/:id', ctrl.viewSale);

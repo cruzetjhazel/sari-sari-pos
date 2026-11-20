@@ -79,7 +79,7 @@ async function listProducts(req, res, next) {
          FROM products LEFT JOIN categories ON categories.id = products.category_id
          ORDER BY products.active DESC, products.name ASC`
       ).then((r) => r.rows),
-      query('SELECT * FROM categories ORDER BY name').then((r) => r.rows),
+      query('SELECT * FROM categories ORDER BY active DESC, name').then((r) => r.rows),
     ]);
     res.render('admin/products', { title: 'Products', products, categories });
   } catch (err) {
@@ -153,6 +153,29 @@ async function createCategory(req, res, next) {
   }
 }
 
+async function updateCategory(req, res, next) {
+  const { name } = req.body;
+  try {
+    if (!name || !name.trim()) throw new Error('Category name is required.');
+    await query('UPDATE categories SET name = $1 WHERE id = $2', [name.trim(), req.params.id]);
+    setFlash(req, 'success', 'Category updated.');
+  } catch (err) {
+    setFlash(req, 'error', `Could not update category: ${err.message}`);
+  }
+  res.redirect('/admin/products');
+}
+
+async function toggleCategoryActive(req, res, next) {
+  try {
+    await query('UPDATE categories SET active = NOT active WHERE id = $1', [req.params.id]);
+  } catch (err) {
+    setFlash(req, 'error', `Could not change category status: ${err.message}`);
+  }
+  res.redirect('/admin/products');
+}
+
+
+
 // ---- Users ----
 
 async function listUsers(req, res, next) {
@@ -197,6 +220,23 @@ async function toggleUserActive(req, res, next) {
     next(err);
   }
 }
+
+async function updateUserRole(req, res, next) {
+  const { role } = req.body;
+  try {
+    if (!['admin', 'sales_rep'].includes(role)) throw new Error('Invalid role.');
+    if (Number(req.params.id) === req.session.user.id && role !== 'admin') {
+      throw new Error('You cannot change your own role.');
+    }
+    await query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
+    setFlash(req, 'success', 'User role updated.');
+  } catch (err) {
+    setFlash(req, 'error', `Could not update role: ${err.message}`);
+  }
+  res.redirect('/admin/users');
+}
+
+
 
 // ---- Sales ----
 
@@ -291,9 +331,12 @@ module.exports = {
   createProduct,
   updateProduct,
   createCategory,
+  updateCategory,
+  toggleCategoryActive,
   listUsers,
   createUser,
   toggleUserActive,
+  updateUserRole,
   listSales,
   viewSale,
   listInventoryReports,

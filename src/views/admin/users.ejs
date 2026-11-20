@@ -28,7 +28,15 @@
           <tr class="<%= !u.active ? 'row-muted' : '' %>">
             <td><%= u.username %></td>
             <td><%= u.full_name %></td>
-            <td><%= u.role === 'admin' ? 'Admin' : 'Sales Rep' %></td>
+            <td>
+              <form method="POST" action="/admin/users/<%= u.id %>/role" class="form-inline">
+                <select name="role">
+                  <option value="sales_rep" <%= u.role === 'sales_rep' ? 'selected' : '' %>>Sales Representative</option>
+                  <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                </select>
+                <button type="submit" class="btn btn-small">Save</button>
+              </form>
+            </td>
             <td><%= u.active ? 'Active' : 'Inactive' %></td>
             <td><%= u.created_at %></td>
             <td>
